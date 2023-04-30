@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-static class IDE
+static class CodeEditor
 {
     static Node baseNode;
     static string codeLine = "";
@@ -33,7 +33,7 @@ static class IDE
         return tex;
     }
 
-    static IDE()
+    static CodeEditor()
     {
         baseNode = new Node { type = NodeType.Body, children = new List<Node>() };
         FlattenHierarchy(baseNode, flattenHierarchy);
@@ -200,10 +200,8 @@ static class IDE
 
         if (evt.type == EventType.Repaint)
         {
-            var startY = 20;
-            var style = new GUIStyle(GUI.skin.label);
-            style.fontSize = 20;
-            var drawGUI = new DrawGUI { lineSize = 30, style = style, x = 0, y = startY, borderSize=4, indentSize=20 };
+            var startY = 40;
+            var drawGUI = new DrawGUI { lineSize = 30, style = Main.labelStyle, x = 0, y = startY, borderSize=4, indentSize=20 };
             DrawBody(drawGUI, baseNode, 0);
             GUI.color = Color.white;
             GUI.DrawTexture(new Rect(0, startY + line * drawGUI.lineSize, 200, 2), CreateTex(Color.red));
@@ -220,13 +218,17 @@ static class IDE
             FlattenHierarchy(baseNode, flattenHierarchy);
         }
         GUI.color = Color.white;
-        codeLine = GUI.TextField(new Rect(0, Screen.height - 20, Screen.width, 20), codeLine);
+        codeLine = GUI.TextField(new Rect(0, Screen.height - 40, Screen.width, 40), codeLine, Main.textboxStyle);
 
-        if(GUI.Button(new Rect(0,0,100,20), ">"))
+        if(GUI.Button(new Rect(0,0,200,40), ">", Main.buttonStyle))
         {
             Game.Begin();
             var instructions = GenerateAsm.Generate(baseNode);
             VM.Run(instructions);
+        }
+        if (GUI.Button(new Rect(200, 0, 200, 40), "Instructions", Main.buttonStyle))
+        {
+            Main.gameState = GameState.Instructions;
         }
     }
 
