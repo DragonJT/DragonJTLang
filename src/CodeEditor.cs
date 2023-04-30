@@ -200,8 +200,8 @@ static class CodeEditor
 
         if (evt.type == EventType.Repaint)
         {
-            var startY = 40;
-            var drawGUI = new DrawGUI { lineSize = 30, style = Main.labelStyle, x = 0, y = startY, borderSize=4, indentSize=20 };
+            var startY = Main.lineSize;
+            var drawGUI = new DrawGUI { lineSize = Main.lineSize, style = Main.labelStyle, x = 0, y = startY, borderSize=Main.lineSize*0.3f, indentSize=Main.lineSize };
             DrawBody(drawGUI, baseNode, 0);
             GUI.color = Color.white;
             GUI.DrawTexture(new Rect(0, startY + line * drawGUI.lineSize, 200, 2), CreateTex(Color.red));
@@ -218,15 +218,15 @@ static class CodeEditor
             FlattenHierarchy(baseNode, flattenHierarchy);
         }
         GUI.color = Color.white;
-        codeLine = GUI.TextField(new Rect(0, Screen.height - 40, Screen.width, 40), codeLine, Main.textboxStyle);
+        codeLine = GUI.TextField(new Rect(0, Screen.height - Main.lineSize, Screen.width, Main.lineSize), codeLine, Main.textboxStyle);
 
-        if(GUI.Button(new Rect(0,0,200,40), ">", Main.buttonStyle))
+        if(GUI.Button(new Rect(0,0,Main.buttonWidth,Main.lineSize), ">", Main.buttonStyle))
         {
             Game.Begin();
             var instructions = GenerateAsm.Generate(baseNode);
             VM.Run(instructions);
         }
-        if (GUI.Button(new Rect(200, 0, 200, 40), "Instructions", Main.buttonStyle))
+        if (GUI.Button(new Rect(Main.buttonWidth, 0, Main.buttonWidth, Main.lineSize), "Instructions", Main.buttonStyle))
         {
             Main.gameState = GameState.Instructions;
         }

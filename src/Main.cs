@@ -8,18 +8,18 @@ class Main:MonoBehaviour
     public static GUIStyle buttonStyle;
     public static GUIStyle labelStyle;
     public static GUIStyle textboxStyle;
-
+    public static float lineSize;
+    public static float buttonWidth;
     private void OnGUI()
     {
-        if(buttonStyle == null)
-        {
-            buttonStyle = new GUIStyle(GUI.skin.button);
-            buttonStyle.fontSize = 30;
-            labelStyle = new GUIStyle(GUI.skin.label);
-            labelStyle.fontSize = 20;
-            textboxStyle = new GUIStyle(GUI.skin.textField);
-            textboxStyle.fontSize = 20;
-        }
+        lineSize = Screen.height * 0.075f;
+        buttonWidth = Screen.width * 0.2f;
+        buttonStyle = new GUIStyle(GUI.skin.button);
+        buttonStyle.fontSize = (int)(Screen.height*0.05f);
+        labelStyle = new GUIStyle(GUI.skin.label);
+        labelStyle.fontSize = (int)(Screen.height*0.05f);
+        textboxStyle = new GUIStyle(GUI.skin.textField);
+        textboxStyle.fontSize = (int)(Screen.height*0.05f);
 
         if (gameState == GameState.Instructions)
         {

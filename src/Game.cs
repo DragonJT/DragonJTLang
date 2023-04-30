@@ -18,18 +18,17 @@ static class Game
 
     public static void OnGUI()
     {
-        GUI.Box(new Rect(20, 40, Screen.width - 40, Screen.height - 60), "");
+        GUI.Box(new Rect(Main.lineSize, Main.lineSize, Screen.width - Main.lineSize*2, Screen.height - Main.lineSize*2), "");
 
-        var y = 40;
-        var x = 20;
-        var lineSize = 30;
+        var y = Main.lineSize;
+        var x = Main.lineSize;
         foreach (var m in console)
         {
-            GUI.Label(new Rect(x, y, Screen.width - 40, lineSize), m, Main.labelStyle);
-            y += lineSize;
+            GUI.Label(new Rect(x, y, Screen.width - Main.lineSize*2, Main.lineSize), m, Main.labelStyle);
+            y += Main.lineSize;
         }
 
-        if (GUI.Button(new Rect(0, 0, 100, 40), "x", Main.buttonStyle))
+        if (GUI.Button(new Rect(0, 0, Main.buttonWidth, Main.lineSize), "x", Main.buttonStyle))
         {
             Main.gameState = GameState.CodeEditor;
         }
