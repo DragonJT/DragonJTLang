@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-enum ByteCode { Call, Add, Sub, Mul, Div, LT, MT, Const, Ret, SetLocal, GetLocal, IfBr }
+enum ByteCode { Call, Add, Sub, Mul, Div, LT, MT, Const, Ret, SetLocal, GetLocal, If, Goto }
 
 class Instruction
 {
@@ -29,15 +29,35 @@ static class GenerateAsm
     {
         switch (node.type)
         {
+            case NodeType.Assign:
+                {
+                    Generate(node.children[0], instructions);
+                    instructions.Add(new Instruction { type = ByteCode.SetLocal, value = locals[node.token.text] });
+                    break;
+                }
             case NodeType.If:
                 {
                     Generate(node.children[0], instructions);
-                    var ifInstruction = new Instruction { type = ByteCode.IfBr };
+                    var ifInstruction = new Instruction { type = ByteCode.If };
                     instructions.Add(ifInstruction);
                     foreach(var c in node.children[1].children)
                     {
                         Generate(c, instructions);
                     }
+                    ifInstruction.value = instructions.Count;
+                    break;
+                }
+            case NodeType.While:
+                {
+                    var start = instructions.Count;
+                    Generate(node.children[0], instructions);
+                    var ifInstruction = new Instruction { type = ByteCode.If };
+                    instructions.Add(ifInstruction);
+                    foreach (var c in node.children[1].children)
+                    {
+                        Generate(c, instructions);
+                    }
+                    instructions.Add(new Instruction { type = ByteCode.Goto, value = start });
                     ifInstruction.value = instructions.Count;
                     break;
                 }

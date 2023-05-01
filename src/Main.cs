@@ -22,7 +22,7 @@ class Main:MonoBehaviour
         labelStyle.fontSize = (int)(Screen.height*0.04f);
         textboxStyle = new GUIStyle(GUI.skin.textField);
         textboxStyle.fontSize = (int)(Screen.height*0.04f);
-
+        
         if (gameState == GameState.Instructions || waitFrame)
         {
             var text = @"This is a Codeeditor and language. Github repo 'https://github.com/DragonJT/DragonJTLang'
@@ -30,19 +30,22 @@ In the CodeEditor there is a textbox at the bottom where you input lines of code
 Enter 'Print(2)' or any line of code of your choice. Then press return.
 Use the up and down arrows to select where to place the line of code.
 Press the > button to run the code.
-Press control/command backspace to delete previous line.
-
-example code...
-var x = 20+20*2+4/2
-var y = 1+2+3+4+5
-Print(x+y)
-if(x>y)
-Print(2)";
+Press control/command backspace to delete previous line.";
             GUILayout.Label(text, labelStyle);
 
             if(Event.current.type == EventType.Repaint)
             {
                 waitFrame = false;
+            }
+            if (GUILayout.Button("Example", buttonStyle))
+            {
+                CodeEditor.SetExample(@"var i=0
+while(i<10){
+    if(i>5){
+        Print(i*i+1)
+    }
+    i=i+1
+}");
             }
             if (GUILayout.Button("Continue", buttonStyle) || Event.current.type == EventType.KeyDown || Event.current.type == EventType.MouseDown)
             {

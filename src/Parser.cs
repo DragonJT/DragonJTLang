@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-enum NodeType { Body, Varname, Number, Add, Sub, Div, Mul, LT, MT, Call, If, Assign, Var }
+enum NodeType { Body, Varname, Number, Add, Sub, Div, Mul, LT, MT, Call, If, While, Assign, Var }
 
 class Node
 {
@@ -132,6 +132,16 @@ static class Parser
                     children = new List<Node> { expression }
                 };
             }
+            else if (tokens[1].type == TokenType.Equals)
+            {
+                var expression = ExpressionToNodes(tokens.GetRange(2, tokens.Count - 2));
+                return new Node
+                {
+                    type = NodeType.Assign,
+                    token = tokens[0],
+                    children = new List<Node> { expression }
+                };
+            }
             throw new System.Exception("Error");
         }
         else if (t.type == TokenType.If)
@@ -142,7 +152,20 @@ static class Parser
                 return new Node
                 {
                     type = NodeType.If,
-                    children = new List<Node> { expression, new Node { type = NodeType.Body, children = new List<Node>() } }
+                    children = new List<Node> { expression, new Node { type = NodeType.Body, children = new List<Node>() } },
+                };
+            }
+            throw new System.Exception("Error");
+        }
+        else if(t.type == TokenType.While)
+        {
+            if (tokens[1].type == TokenType.OpenParenthesis)
+            {
+                var expression = ExpressionToNodes(GetTokensUntil(tokens, 2, TokenType.CloseParenthesis));
+                return new Node
+                {
+                    type = NodeType.While,
+                    children = new List<Node> { expression, new Node { type = NodeType.Body, children = new List<Node>() } },
                 };
             }
             throw new System.Exception("Error");

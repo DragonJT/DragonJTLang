@@ -1,8 +1,7 @@
 ﻿
 using System.Collections.Generic;
-using UnityEngine;
 
-enum TokenType { If, Var, Varname, Number, Add, Sub, Div, Mul, LT, MT, OpenParenthesis, CloseParenthesis, Equals }
+enum TokenType { If, While, Var, Varname, Number, Add, Sub, Div, Mul, LT, MT, OpenParenthesis, CloseParenthesis, Equals, OpenCurly, CloseCurly }
 
 class Token
 {
@@ -44,6 +43,7 @@ static class Tokenizer
         switch (text)
         {
             case "if": return new Token { type = TokenType.If, text = text };
+            case "while": return new Token { type = TokenType.While, text = text };
             case "var": return new Token { type = TokenType.Var, text = text };
         }
         return new Token { type = TokenType.Varname, text = text };
@@ -119,6 +119,8 @@ static class Tokenizer
             case '=': return GetToken(reader, 1, TokenType.Equals);
             case '<': return GetToken(reader, 1, TokenType.LT);
             case '>': return GetToken(reader, 1, TokenType.MT);
+            case '{': return GetToken(reader, 1, TokenType.OpenCurly);
+            case '}': return GetToken(reader, 1, TokenType.CloseCurly);
             case ' ': reader.index++; goto Start;
             case '\t': reader.index++; goto Start;
             case '\r': reader.index++; goto Start;

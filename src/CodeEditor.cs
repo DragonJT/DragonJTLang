@@ -34,6 +34,16 @@ static class CodeEditor
         return tex;
     }
 
+    static bool HasBody(NodeType type)
+    {
+        switch (type)
+        {
+            case NodeType.If: return true;
+            case NodeType.While: return true;
+        }
+        return false;
+    }
+
     static CodeEditor()
     {
         baseNode = new Node { type = NodeType.Body, children = new List<Node>() };
@@ -115,9 +125,27 @@ static class CodeEditor
                 drawGUI.x = depth * drawGUI.indentSize;
                 Draw(drawGUI, "}", depth);
             }
+            else if (c.type == NodeType.While)
+            {
+                Draw(drawGUI, "while", depth);
+                Draw(drawGUI, "(", depth);
+                DrawExpression(drawGUI, c.children[0], depth + 1);
+                Draw(drawGUI, ")", depth);
+                Draw(drawGUI, "{", depth);
+                drawGUI.y += drawGUI.lineSize;
+                DrawBody(drawGUI, c.children[1], depth + 1);
+                drawGUI.x = depth * drawGUI.indentSize;
+                Draw(drawGUI, "}", depth);
+            }
             else if(c.type == NodeType.Var)
             {
                 Draw(drawGUI, "var", depth);
+                Draw(drawGUI, c.token.text, depth + 1);
+                Draw(drawGUI, "=", depth);
+                DrawExpression(drawGUI, c.children[0], depth + 1);
+            }
+            else if(c.type == NodeType.Assign)
+            {
                 Draw(drawGUI, c.token.text, depth + 1);
                 Draw(drawGUI, "=", depth);
                 DrawExpression(drawGUI, c.children[0], depth + 1);
@@ -136,7 +164,7 @@ static class CodeEditor
         for (var i = 0; i < parent.children.Count; i++)
         {
             var c = parent.children[i];
-            if(c.type == NodeType.If)
+            if(HasBody(c.type))
             {
                 FlattenHierarchy(c.children[1], flattenHierarchy, false);
             }
@@ -150,12 +178,38 @@ static class CodeEditor
         for (var i = 0; i < parent.children.Count; i++)
         {
             var c = parent.children[i];
-            if (c.type == NodeType.If)
+            if (HasBody(c.type))
             {
                 CountHierarchy(c.children[1], ref count);
             }
             count++;
         }
+    }
+
+    public static void SetExample(string code)
+    {
+        baseNode = new Node { type = NodeType.Body, children = new List<Node>() };
+        Stack<Node> nodes = new Stack<Node>();
+        nodes.Push(baseNode);
+        foreach (var l in code.Split('\n'))
+        {
+            var tokens = Tokenizer.Tokenize(l);
+            if (tokens[0].type == TokenType.CloseCurly)
+            {
+                nodes.Pop();
+            }
+            else
+            {
+                var node = Parser.ParseLine(tokens);
+                nodes.Peek().children.Add(node);
+                if (HasBody(node.type))
+                {
+                    nodes.Push(node.children[1]);
+                }
+            }
+        }
+        FlattenHierarchy(baseNode, flattenHierarchy);
+        Begin();
     }
 
     public static void Begin()
@@ -177,7 +231,7 @@ static class CodeEditor
                     if (f.index > 0)
                     {
                         var n = f.node.children[f.index - 1];
-                        if(n.type == NodeType.If)
+                        if(HasBody(n.type))
                         {
                             var count = 0;
                             CountHierarchy(n.children[1], ref count);

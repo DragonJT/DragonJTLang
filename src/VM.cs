@@ -14,7 +14,12 @@ static class VM
             var i = function.instructions[index];
             switch (i.type)
             {
-                case ByteCode.IfBr:
+                case ByteCode.Goto:
+                    {
+                        index = (int)i.value;
+                        break;
+                    }
+                case ByteCode.If:
                     {
                         index = ((bool)stack.Pop()) ? index + 1 : (int)i.value;
                         break;
