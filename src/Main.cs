@@ -10,25 +10,27 @@ class Main:MonoBehaviour
     public static GUIStyle textboxStyle;
     public static float lineSize;
     public static float buttonWidth;
+    public static bool waitFrame;
+
     private void OnGUI()
     {
-        lineSize = Screen.height * 0.075f;
+        lineSize = Screen.height * 0.06f;
         buttonWidth = Screen.width * 0.2f;
         buttonStyle = new GUIStyle(GUI.skin.button);
-        buttonStyle.fontSize = (int)(Screen.height*0.05f);
+        buttonStyle.fontSize = (int)(Screen.height*0.04f);
         labelStyle = new GUIStyle(GUI.skin.label);
-        labelStyle.fontSize = (int)(Screen.height*0.05f);
+        labelStyle.fontSize = (int)(Screen.height*0.04f);
         textboxStyle = new GUIStyle(GUI.skin.textField);
-        textboxStyle.fontSize = (int)(Screen.height*0.05f);
+        textboxStyle.fontSize = (int)(Screen.height*0.04f);
 
-        if (gameState == GameState.Instructions)
+        if (gameState == GameState.Instructions || waitFrame)
         {
             var text = @"This is a Codeeditor and language. Github repo 'https://github.com/DragonJT/DragonJTLang'
 In the CodeEditor there is a textbox at the bottom where you input lines of code.
 Enter 'Print(2)' or any line of code of your choice. Then press return.
 Use the up and down arrows to select where to place the line of code.
 Press the > button to run the code.
-This project is early in development so not much code can be written.
+Press control/command backspace to delete previous line.
 
 example code...
 var x = 20+20*2+4/2
@@ -38,12 +40,17 @@ if(x>y)
 Print(2)";
             GUILayout.Label(text, labelStyle);
 
-            if (GUILayout.Button("Continue", buttonStyle))
+            if(Event.current.type == EventType.Repaint)
             {
-                gameState = GameState.CodeEditor;
+                waitFrame = false;
+            }
+            if (GUILayout.Button("Continue", buttonStyle) || Event.current.type == EventType.KeyDown || Event.current.type == EventType.MouseDown)
+            {
+                CodeEditor.Begin();
+                waitFrame = true;
             }
         }
-        if(gameState == GameState.CodeEditor)
+        else if(gameState == GameState.CodeEditor)
         {
             CodeEditor.OnGUI();
         }

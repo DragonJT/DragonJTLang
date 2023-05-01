@@ -8,6 +8,7 @@ static class CodeEditor
     static string codeLine = "";
     static int line = 0;
     static List<FlatHierarchy> flattenHierarchy = new List<FlatHierarchy>();
+    static bool firstFrame;
 
     class FlatHierarchy
     {
@@ -157,6 +158,12 @@ static class CodeEditor
         }
     }
 
+    public static void Begin()
+    {
+        Main.gameState = GameState.CodeEditor;
+        firstFrame = true;
+    }
+
     public static void OnGUI()
     {
         var evt = Event.current;
@@ -218,8 +225,9 @@ static class CodeEditor
             FlattenHierarchy(baseNode, flattenHierarchy);
         }
         GUI.color = Color.white;
+        GUI.SetNextControlName("ConsoleTextBox");
         codeLine = GUI.TextField(new Rect(0, Screen.height - Main.lineSize, Screen.width, Main.lineSize), codeLine, Main.textboxStyle);
-
+        
         if(GUI.Button(new Rect(0,0,Main.buttonWidth,Main.lineSize), ">", Main.buttonStyle))
         {
             Game.Begin();
@@ -229,6 +237,11 @@ static class CodeEditor
         if (GUI.Button(new Rect(Main.buttonWidth, 0, Main.buttonWidth, Main.lineSize), "Instructions", Main.buttonStyle))
         {
             Main.gameState = GameState.Instructions;
+        }
+        if (firstFrame)
+        {
+            GUI.FocusControl("ConsoleTextBox");
+            firstFrame = false;
         }
     }
 

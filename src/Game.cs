@@ -30,7 +30,7 @@ static class Game
 
         if (GUI.Button(new Rect(0, 0, Main.buttonWidth, Main.lineSize), "x", Main.buttonStyle))
         {
-            Main.gameState = GameState.CodeEditor;
+            CodeEditor.Begin();
         }
     }
 }
