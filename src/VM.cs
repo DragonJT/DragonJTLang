@@ -3,17 +3,39 @@ using UnityEngine;
 
 static class VM
 {
+    static Stack<object> stack;
+    static object[] locals;
+    public static bool _continue;
+    static int index;
+    static Function function;
+
     public static void Run(Function function)
     {
-        Stack<object> stack = new Stack<object>();
-        object[] locals = new object[function.localCount];
+        VM.function = function;
+        stack = new Stack<object>();
+        locals = new object[function.localCount];
+        index = 0;
+        _continue = true;
+        Update();
+    }
 
-        var index = 0;
+    public static void Update()
+    {
+        if (!_continue)
+        {
+            return;
+        }
         while (true)
         {
             var i = function.instructions[index];
             switch (i.type)
             {
+                case ByteCode.Yield:
+                    {
+                        _continue = true;
+                        index++;
+                        return;
+                    }
                 case ByteCode.Goto:
                     {
                         index = (int)i.value;
@@ -107,7 +129,11 @@ static class VM
                         index++;
                         break;
                     }
-                case ByteCode.Ret: return;
+                case ByteCode.Ret:
+                    {
+                        _continue = false;
+                        return;
+                    }
                 default: throw new System.Exception("Unknown instruction: " + i.type);
             }
         }

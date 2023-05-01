@@ -155,6 +155,10 @@ static class CodeEditor
             {
                 Draw(drawGUI, "break", depth);
             }
+            else if (c.type == NodeType.Yield)
+            {
+                Draw(drawGUI, "yield", depth);
+            }
             drawGUI.y += drawGUI.lineSize;
         }
     }

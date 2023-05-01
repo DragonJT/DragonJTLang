@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-enum ByteCode { Call, Add, Sub, Mul, Div, LT, MT, ConstI32, ConstBool, Ret, SetLocal, GetLocal, If, Goto }
+enum ByteCode { Call, Add, Sub, Mul, Div, LT, MT, ConstI32, ConstBool, Ret, SetLocal, GetLocal, If, Goto, Yield }
 
 class Instruction
 {
@@ -30,6 +30,11 @@ static class GenerateAsm
     {
         switch (node.type)
         {
+            case NodeType.Yield:
+                {
+                    instructions.Add(new Instruction { type = ByteCode.Yield });
+                    break;
+                }
             case NodeType.Break:
                 {
                     breakInstruction = new Instruction { type = ByteCode.Goto };

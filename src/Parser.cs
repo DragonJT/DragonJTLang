@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-enum NodeType { Body, Varname, Number, Add, Sub, Div, Mul, LT, MT, Call, If, While, Assign, Var, Break, True, False }
+enum NodeType { Body, Varname, Number, Add, Sub, Div, Mul, LT, MT, Call, If, While, Assign, Var, Break, True, False, Yield }
 
 class Node
 {
@@ -192,6 +192,10 @@ static class Parser
         else if(t.type == TokenType.Break)
         {
             return new Node { type = NodeType.Break };
+        }
+        else if(t.type == TokenType.Yield)
+        {
+            return new Node { type = NodeType.Yield };
         }
         throw new System.Exception("Error");
     }

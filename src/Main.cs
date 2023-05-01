@@ -11,6 +11,22 @@ class Main:MonoBehaviour
     public static float lineSize;
     public static float buttonWidth;
     public static bool waitFrame;
+    public static Main main;
+
+    private void Awake()
+    {
+        Camera.main.clearFlags = CameraClearFlags.SolidColor;
+        Camera.main.backgroundColor = Color.black;
+        main = this;
+    }
+
+    private void Update()
+    {
+        if(gameState == GameState.Game)
+        {
+            Game.Update();
+        }
+    }
 
     private void OnGUI()
     {

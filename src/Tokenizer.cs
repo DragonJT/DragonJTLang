@@ -4,7 +4,7 @@ using System.Collections.Generic;
 enum TokenType
 {
     If, While, Var, Varname, Number, Add, Sub, Div, Mul, LT, MT, OpenParenthesis, CloseParenthesis, Equals, OpenCurly, CloseCurly,
-    Break, True, False
+    Break, True, False, Yield,
 }
 
 class Token
@@ -52,6 +52,7 @@ static class Tokenizer
             case "break": return new Token { type = TokenType.Break, text = text };
             case "true": return new Token { type = TokenType.True, text = text };
             case "false": return new Token { type = TokenType.False, text = text };
+            case "yield": return new Token { type = TokenType.Yield, text = text };
         }
         return new Token { type = TokenType.Varname, text = text };
     }
