@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-enum NodeType { Body, Varname, Number, Add, Sub, Div, Mul, LT, MT, Call, If, While, Assign, Var }
+enum NodeType { Body, Varname, Number, Add, Sub, Div, Mul, LT, MT, Call, If, While, Assign, Var, Break, True, False }
 
 class Node
 {
@@ -63,6 +63,8 @@ static class Parser
         {
             case TokenType.Varname: return NodeType.Varname;
             case TokenType.Number: return NodeType.Number;
+            case TokenType.True: return NodeType.True;
+            case TokenType.False: return NodeType.False;
             default: throw new System.Exception("Not a value type");
         }
     }
@@ -186,6 +188,10 @@ static class Parser
                 }
             }
             throw new System.Exception("Error");
+        }
+        else if(t.type == TokenType.Break)
+        {
+            return new Node { type = NodeType.Break };
         }
         throw new System.Exception("Error");
     }

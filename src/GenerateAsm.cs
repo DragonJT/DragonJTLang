@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-enum ByteCode { Call, Add, Sub, Mul, Div, LT, MT, Const, Ret, SetLocal, GetLocal, If, Goto }
+enum ByteCode { Call, Add, Sub, Mul, Div, LT, MT, ConstI32, ConstBool, Ret, SetLocal, GetLocal, If, Goto }
 
 class Instruction
 {
@@ -17,6 +17,7 @@ class Function
 static class GenerateAsm
 {
     static Dictionary<string, int> locals = new Dictionary<string, int>();
+    static Instruction breakInstruction;
 
     static void BinaryOp(Node node, List<Instruction> instructions, ByteCode type)
     {
@@ -29,6 +30,12 @@ static class GenerateAsm
     {
         switch (node.type)
         {
+            case NodeType.Break:
+                {
+                    breakInstruction = new Instruction { type = ByteCode.Goto };
+                    instructions.Add(breakInstruction);
+                    break;
+                }
             case NodeType.Assign:
                 {
                     Generate(node.children[0], instructions);
@@ -59,6 +66,11 @@ static class GenerateAsm
                     }
                     instructions.Add(new Instruction { type = ByteCode.Goto, value = start });
                     ifInstruction.value = instructions.Count;
+                    if (breakInstruction != null)
+                    {
+                        breakInstruction.value = instructions.Count;
+                        breakInstruction = null;
+                    }
                     break;
                 }
             case NodeType.Var:
@@ -80,9 +92,19 @@ static class GenerateAsm
             case NodeType.Div: BinaryOp(node, instructions, ByteCode.Div); break;
             case NodeType.LT: BinaryOp(node, instructions, ByteCode.LT); break;
             case NodeType.MT: BinaryOp(node, instructions, ByteCode.MT); break;
+            case NodeType.True:
+                {
+                    instructions.Add(new Instruction { type = ByteCode.ConstBool, value = true });
+                    break;
+                }
+            case NodeType.False:
+                {
+                    instructions.Add(new Instruction { type = ByteCode.ConstI32, value = false });
+                    break;
+                }
             case NodeType.Number:
                 {
-                    instructions.Add(new Instruction { type = ByteCode.Const, value = int.Parse(node.token.text) });
+                    instructions.Add(new Instruction { type = ByteCode.ConstI32, value = int.Parse(node.token.text) });
                     break;
                 }
             case NodeType.Varname:

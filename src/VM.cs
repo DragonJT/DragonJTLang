@@ -47,7 +47,13 @@ static class VM
                         index++;
                         break;
                     }
-                case ByteCode.Const:
+                case ByteCode.ConstI32:
+                    {
+                        stack.Push(i.value);
+                        index++;
+                        break;
+                    }
+                case ByteCode.ConstBool:
                     {
                         stack.Push(i.value);
                         index++;

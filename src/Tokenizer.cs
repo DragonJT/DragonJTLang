@@ -1,7 +1,11 @@
 ﻿
 using System.Collections.Generic;
 
-enum TokenType { If, While, Var, Varname, Number, Add, Sub, Div, Mul, LT, MT, OpenParenthesis, CloseParenthesis, Equals, OpenCurly, CloseCurly }
+enum TokenType
+{
+    If, While, Var, Varname, Number, Add, Sub, Div, Mul, LT, MT, OpenParenthesis, CloseParenthesis, Equals, OpenCurly, CloseCurly,
+    Break, True, False
+}
 
 class Token
 {
@@ -45,6 +49,9 @@ static class Tokenizer
             case "if": return new Token { type = TokenType.If, text = text };
             case "while": return new Token { type = TokenType.While, text = text };
             case "var": return new Token { type = TokenType.Var, text = text };
+            case "break": return new Token { type = TokenType.Break, text = text };
+            case "true": return new Token { type = TokenType.True, text = text };
+            case "false": return new Token { type = TokenType.False, text = text };
         }
         return new Token { type = TokenType.Varname, text = text };
     }

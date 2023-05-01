@@ -74,7 +74,6 @@ static class CodeEditor
 
     static void DrawBinaryOp(DrawGUI drawGUI, Node node, int depth)
     {
-
         DrawExpression(drawGUI, node.children[0], depth+1);
         Draw(drawGUI, node.token.text, depth);
         DrawExpression(drawGUI, node.children[1], depth+1);
@@ -89,6 +88,8 @@ static class CodeEditor
     {
         switch (node.type)
         {
+            case NodeType.True: Draw(drawGUI, "true", depth + 1); return;
+            case NodeType.False: Draw(drawGUI, "false", depth + 1); return;
             case NodeType.Number: DrawValue(drawGUI, node, depth + 1); return;
             case NodeType.Varname: DrawValue(drawGUI, node, depth + 1); return;
             case NodeType.Add: DrawBinaryOp(drawGUI, node, depth + 1); return;
@@ -149,6 +150,10 @@ static class CodeEditor
                 Draw(drawGUI, c.token.text, depth + 1);
                 Draw(drawGUI, "=", depth);
                 DrawExpression(drawGUI, c.children[0], depth + 1);
+            }
+            else if(c.type == NodeType.Break)
+            {
+                Draw(drawGUI, "break", depth);
             }
             drawGUI.y += drawGUI.lineSize;
         }
