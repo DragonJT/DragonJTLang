@@ -72,9 +72,11 @@ while(i<10){
             {
                 CodeEditor.SetExample(@"var x=0
 while(true){
-    x=x+0.01
-    if(x>1){
-        x=0-1
+    if(LeftArrowKey()){
+        x=x-0.01
+    }
+    if(RightArrowKey()){
+        x=x+0.01
     }
     DrawTriangle(x,0,0.2,0.3,1,0.3)
     yield

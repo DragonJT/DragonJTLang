@@ -1,93 +1,81 @@
 ﻿
 
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 
-enum NodeType { Body, Varname, Number, Add, Sub, Div, Mul, LT, MT, Call, If, While, Assign, Var, Break, True, False, Yield, Params }
+enum NodeType
+{
+    If, While, Var, Varname, Number, Add, Sub, Div, Mul, LT, MT, OpenParenthesis, CloseParenthesis, Equals, OpenCurly, CloseCurly,
+    Break, True, False, Yield, Comma, Body, Call, Assign, ExpressionCall,
+}
 
 class Node
 {
     public NodeType type;
-    public Token token;
+    public string text;
     public List<Node> children;
 }
 
 static class Parser
 {
-    static List<Token> GetTokensUntil(List<Token> tokens, int index, TokenType end)
+    static List<Node> GetTokensUntil(List<Node> tokens, int index, NodeType end)
     {
-        var result = new List<Token>();
+        var result = new List<Node>();
+        var depth = 0;
         while (true)
         {
             var t = tokens[index];
-            if (t.type == end)
+            if (t.type == end && depth == 0)
             {
                 return result;
+            }
+            else if (t.type == NodeType.OpenParenthesis)
+            {
+                depth++;
+            }
+            else if(t.type == NodeType.CloseParenthesis)
+            {
+                depth--;
             }
             result.Add(t);
             index++;
         }
     }
 
-    static int Precedence(TokenType type)
+    static int Precedence(NodeType type)
     {
         switch (type)
         {
-            case TokenType.Add: return 5;
-            case TokenType.Sub: return 5;
-            case TokenType.Div: return 0;
-            case TokenType.Mul: return 0;
-            case TokenType.LT: return 10;
-            case TokenType.MT: return 10;
+            case NodeType.Add: return 5;
+            case NodeType.Sub: return 5;
+            case NodeType.Div: return 0;
+            case NodeType.Mul: return 0;
+            case NodeType.LT: return 10;
+            case NodeType.MT: return 10;
         }
         throw new System.Exception("Not an operator");
     }
 
-    static bool IsOperator(TokenType type)
+    static bool IsOperator(NodeType type)
     {
         switch (type)
         {
-            case TokenType.Add: return true;
-            case TokenType.Sub: return true;
-            case TokenType.Mul: return true;
-            case TokenType.Div: return true;
-            case TokenType.LT: return true;
-            case TokenType.MT: return true;
+            case NodeType.Add: return true;
+            case NodeType.Sub: return true;
+            case NodeType.Mul: return true;
+            case NodeType.Div: return true;
+            case NodeType.LT: return true;
+            case NodeType.MT: return true;
         }
         return false;
     }
 
-    static NodeType GetValueNodeType(TokenType type)
-    {
-        switch (type)
-        {
-            case TokenType.Varname: return NodeType.Varname;
-            case TokenType.Number: return NodeType.Number;
-            case TokenType.True: return NodeType.True;
-            case TokenType.False: return NodeType.False;
-            default: throw new System.Exception("Not a value type");
-        }
-    }
-
-    static NodeType GetOperatorNodeType(TokenType type)
-    {
-        switch (type)
-        {
-            case TokenType.Add: return NodeType.Add;
-            case TokenType.Sub: return NodeType.Sub;
-            case TokenType.Mul: return NodeType.Mul;
-            case TokenType.Div: return NodeType.Div;
-            case TokenType.LT: return NodeType.LT;
-            case TokenType.MT: return NodeType.MT;
-            default: throw new System.Exception("Not a operator type");
-        }
-    }
-
-    static Node ExpressionToNodes(List<Token> tokens)
+    static Node FindBinaryOps(List<Node> tokens)
     {
         if (tokens.Count == 1)
         {
-            return new Node { type = GetValueNodeType(tokens[0].type), token = tokens[0] };
+            return tokens[0];
         }
         var max = -1;
         var maxIndex = -1;
@@ -106,30 +94,55 @@ static class Parser
         }
         if (maxIndex == -1)
         {
-            foreach(var t in tokens)
+            foreach(var n in tokens)
             {
-                Debug.Log(t.type);
+                Debug.Log(n.type + "_" + n.text);
             }
             throw new System.Exception("No operators found");
         }
-        var b1 = ExpressionToNodes(tokens.GetRange(0, maxIndex));
-        var b2 = ExpressionToNodes(tokens.GetRange(maxIndex + 1, tokens.Count - maxIndex - 1));
-        var opNodeType = GetOperatorNodeType(tokens[maxIndex].type);
-        return new Node { type = opNodeType, token = tokens[maxIndex], children = new List<Node> { b1, b2 } };
+        var b1 = FindBinaryOps(tokens.GetRange(0, maxIndex));
+        var b2 = FindBinaryOps(tokens.GetRange(maxIndex + 1, tokens.Count - maxIndex - 1));
+        tokens[maxIndex].children = new List<Node> { b1, b2 };
+        return tokens[maxIndex];
 
     }
 
-    static List<Node> GetParams(List<Token> tokens)
+    static Node ExpressionToNodes(List<Node> tokens)
+    {
+        var tokens2 = new List<Node>();
+        for(var i = 0; i < tokens.Count; i++)
+        {
+            if (i+1<tokens.Count && tokens[i].type == NodeType.Varname && tokens[i+1].type == NodeType.OpenParenthesis)
+            {
+                var paramTokens = GetTokensUntil(tokens, i + 2, NodeType.CloseParenthesis);
+                var parameters = GetParams(paramTokens);
+                tokens2.Add(new Node
+                {
+                    type = NodeType.ExpressionCall,
+                    text = tokens[i].text,
+                    children = parameters,
+                });
+                i += paramTokens.Count + 2;
+            }
+            else
+            {
+                tokens2.Add(tokens[i]);
+            }
+        }
+        return FindBinaryOps(tokens2);
+    }
+
+    static List<Node> GetParams(List<Node> tokens)
     {
         var parameters = new List<Node>();
         if(tokens.Count == 0)
         {
             return parameters;
         }
-        List<Token> split = new List<Token>();
+        List<Node> split = new List<Node>();
         foreach(var t in tokens)
         {
-            if (t.type == TokenType.Comma)
+            if (t.type == NodeType.Comma)
             {
                 parameters.Add(ExpressionToNodes(split));
                 split.Clear();
@@ -146,38 +159,38 @@ static class Parser
         return parameters;
     }
 
-    public static Node ParseLine(List<Token> tokens)
+    public static Node ParseLine(List<Node> tokens)
     {
         var t = tokens[0];
-        if (t.type == TokenType.Varname)
+        if (t.type == NodeType.Varname)
         {
-            if (tokens[1].type == TokenType.OpenParenthesis)
+            if (tokens[1].type == NodeType.OpenParenthesis)
             {
-                var parameters = GetParams(GetTokensUntil(tokens, 2, TokenType.CloseParenthesis));
+                var parameters = GetParams(GetTokensUntil(tokens, 2, NodeType.CloseParenthesis));
                 return new Node
                 {
                     type = NodeType.Call,
-                    token = t,
+                    text = t.text,
                     children = parameters,
                 };
             }
-            else if (tokens[1].type == TokenType.Equals)
+            else if (tokens[1].type == NodeType.Equals)
             {
                 var expression = ExpressionToNodes(tokens.GetRange(2, tokens.Count - 2));
                 return new Node
                 {
                     type = NodeType.Assign,
-                    token = tokens[0],
+                    text = tokens[0].text,
                     children = new List<Node> { expression }
                 };
             }
             throw new System.Exception("Error");
         }
-        else if (t.type == TokenType.If)
+        else if (t.type == NodeType.If)
         {
-            if (tokens[1].type == TokenType.OpenParenthesis)
+            if (tokens[1].type == NodeType.OpenParenthesis)
             {
-                var expression = ExpressionToNodes(GetTokensUntil(tokens, 2, TokenType.CloseParenthesis));
+                var expression = ExpressionToNodes(GetTokensUntil(tokens, 2, NodeType.CloseParenthesis));
                 return new Node
                 {
                     type = NodeType.If,
@@ -186,11 +199,11 @@ static class Parser
             }
             throw new System.Exception("Error");
         }
-        else if(t.type == TokenType.While)
+        else if(t.type == NodeType.While)
         {
-            if (tokens[1].type == TokenType.OpenParenthesis)
+            if (tokens[1].type == NodeType.OpenParenthesis)
             {
-                var expression = ExpressionToNodes(GetTokensUntil(tokens, 2, TokenType.CloseParenthesis));
+                var expression = ExpressionToNodes(GetTokensUntil(tokens, 2, NodeType.CloseParenthesis));
                 return new Node
                 {
                     type = NodeType.While,
@@ -199,28 +212,28 @@ static class Parser
             }
             throw new System.Exception("Error");
         }
-        else if (t.type == TokenType.Var)
+        else if (t.type == NodeType.Var)
         {
-            if (tokens[1].type == TokenType.Varname)
+            if (tokens[1].type == NodeType.Varname)
             {
-                if (tokens[2].type == TokenType.Equals)
+                if (tokens[2].type == NodeType.Equals)
                 {
                     var expression = ExpressionToNodes(tokens.GetRange(3, tokens.Count - 3));
                     return new Node
                     {
                         type = NodeType.Var,
-                        token = tokens[1],
+                        text = tokens[1].text,
                         children = new List<Node>{ expression }
                     };
                 }
             }
             throw new System.Exception("Error");
         }
-        else if(t.type == TokenType.Break)
+        else if(t.type == NodeType.Break)
         {
             return new Node { type = NodeType.Break };
         }
-        else if(t.type == TokenType.Yield)
+        else if(t.type == NodeType.Yield)
         {
             return new Node { type = NodeType.Yield };
         }

@@ -19,6 +19,7 @@ class Call
 {
     public MethodInfo method;
     public int paramCount;
+    public bool _return;
 }
 
 static class GenerateAsm
@@ -51,7 +52,7 @@ static class GenerateAsm
             case NodeType.Assign:
                 {
                     Generate(node.children[0], instructions);
-                    instructions.Add(new Instruction { type = ByteCode.SetLocal, value = locals[node.token.text] });
+                    instructions.Add(new Instruction { type = ByteCode.SetLocal, value = locals[node.text] });
                     break;
                 }
             case NodeType.If:
@@ -88,8 +89,8 @@ static class GenerateAsm
             case NodeType.Var:
                 {
                     Generate(node.children[0], instructions);
-                    locals.Add(node.token.text, locals.Count);
-                    instructions.Add(new Instruction { type = ByteCode.SetLocal, value = locals[node.token.text] });
+                    locals.Add(node.text, locals.Count);
+                    instructions.Add(new Instruction { type = ByteCode.SetLocal, value = locals[node.text] });
                     break;
                 }
             case NodeType.Call:
@@ -101,7 +102,20 @@ static class GenerateAsm
                     instructions.Add(new Instruction
                     {
                         type = ByteCode.Call,
-                        value = new Call { method = typeof(CallableFunctions).GetMethod(node.token.text), paramCount = node.children.Count },
+                        value = new Call { method = typeof(CallableFunctions).GetMethod(node.text), paramCount = node.children.Count, _return=false },
+                    });
+                    break;
+                }
+            case NodeType.ExpressionCall:
+                {
+                    foreach (var c in node.children)
+                    {
+                        Generate(c, instructions);
+                    }
+                    instructions.Add(new Instruction
+                    {
+                        type = ByteCode.Call,
+                        value = new Call { method = typeof(CallableFunctions).GetMethod(node.text), paramCount = node.children.Count, _return=true },
                     });
                     break;
                 }
@@ -123,12 +137,12 @@ static class GenerateAsm
                 }
             case NodeType.Number:
                 {
-                    instructions.Add(new Instruction { type = ByteCode.ConstF32, value = float.Parse(node.token.text) });
+                    instructions.Add(new Instruction { type = ByteCode.ConstF32, value = float.Parse(node.text) });
                     break;
                 }
             case NodeType.Varname:
                 {
-                    instructions.Add(new Instruction { type = ByteCode.GetLocal, value = locals[node.token.text] });
+                    instructions.Add(new Instruction { type = ByteCode.GetLocal, value = locals[node.text] });
                     break;
                 }
             default: throw new System.Exception("Unexpected type: " + node.type);

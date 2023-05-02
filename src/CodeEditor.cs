@@ -75,13 +75,13 @@ static class CodeEditor
     static void DrawBinaryOp(DrawGUI drawGUI, Node node, int depth)
     {
         DrawExpression(drawGUI, node.children[0], depth+1);
-        Draw(drawGUI, node.token.text, depth);
+        Draw(drawGUI, node.text, depth);
         DrawExpression(drawGUI, node.children[1], depth+1);
     }
 
     static void DrawValue(DrawGUI drawGUI, Node node, int depth)
     {
-        Draw(drawGUI, node.token.text, depth);
+        Draw(drawGUI, node.text, depth);
     }
 
     static void DrawExpression(DrawGUI drawGUI, Node node, int depth)
@@ -98,6 +98,21 @@ static class CodeEditor
             case NodeType.Mul: DrawBinaryOp(drawGUI, node, depth + 1); return;
             case NodeType.LT: DrawBinaryOp(drawGUI, node, depth + 1); return;
             case NodeType.MT: DrawBinaryOp(drawGUI, node, depth + 1); return;
+            case NodeType.ExpressionCall:
+                {
+                    Draw(drawGUI, node.text, depth + 1);
+                    Draw(drawGUI, "(", depth);
+                    for (var i = 0; i < node.children.Count; i++)
+                    {
+                        DrawExpression(drawGUI, node.children[i], depth + 1);
+                        if (i < node.children.Count - 1)
+                        {
+                            Draw(drawGUI, ",", depth);
+                        }
+                    }
+                    Draw(drawGUI, ")", depth);
+                    return;
+                }
         }
         throw new System.Exception("Unexpected node type: " + node.type);
     }
@@ -109,7 +124,7 @@ static class CodeEditor
             drawGUI.x = depth*drawGUI.indentSize;
             if (c.type == NodeType.Call)
             {
-                Draw(drawGUI, c.token.text, depth + 1);
+                Draw(drawGUI, c.text, depth + 1);
                 Draw(drawGUI, "(", depth);
                 for(var i = 0; i < c.children.Count; i++)
                 {
@@ -148,13 +163,13 @@ static class CodeEditor
             else if(c.type == NodeType.Var)
             {
                 Draw(drawGUI, "var", depth);
-                Draw(drawGUI, c.token.text, depth + 1);
+                Draw(drawGUI, c.text, depth + 1);
                 Draw(drawGUI, "=", depth);
                 DrawExpression(drawGUI, c.children[0], depth + 1);
             }
             else if(c.type == NodeType.Assign)
             {
-                Draw(drawGUI, c.token.text, depth + 1);
+                Draw(drawGUI, c.text, depth + 1);
                 Draw(drawGUI, "=", depth);
                 DrawExpression(drawGUI, c.children[0], depth + 1);
             }
@@ -210,7 +225,7 @@ static class CodeEditor
         foreach (var l in code.Split('\n'))
         {
             var tokens = Tokenizer.Tokenize(l);
-            if (tokens[0].type == TokenType.CloseCurly)
+            if (tokens[0].type == NodeType.CloseCurly)
             {
                 nodes.Pop();
             }

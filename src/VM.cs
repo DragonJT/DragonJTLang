@@ -12,6 +12,16 @@ static class CallableFunctions
     {
         Game.DrawTriangle(x, y, radius, new Color(r, g, b));
     }
+
+    public static bool LeftArrowKey()
+    {
+        return Input.GetKey(KeyCode.LeftArrow);
+    }
+
+    public static bool RightArrowKey()
+    {
+        return Input.GetKey(KeyCode.RightArrow);
+    }
 }
 
 static class VM
@@ -79,7 +89,11 @@ static class VM
                         {
                             parameters[pi] = stack.Pop();
                         }
-                        call.method.Invoke(null, parameters);
+                        var result = call.method.Invoke(null, parameters);
+                        if (call._return)
+                        {
+                            stack.Push(result);
+                        }
                         index++;
                         break;
                     }
