@@ -3,7 +3,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-enum NodeType { Body, Varname, Number, Add, Sub, Div, Mul, LT, MT, Call, If, While, Assign, Var, Break, True, False, Yield }
+enum NodeType { Body, Varname, Number, Add, Sub, Div, Mul, LT, MT, Call, If, While, Assign, Var, Break, True, False, Yield, Params }
 
 class Node
 {
@@ -119,6 +119,33 @@ static class Parser
 
     }
 
+    static List<Node> GetParams(List<Token> tokens)
+    {
+        var parameters = new List<Node>();
+        if(tokens.Count == 0)
+        {
+            return parameters;
+        }
+        List<Token> split = new List<Token>();
+        foreach(var t in tokens)
+        {
+            if (t.type == TokenType.Comma)
+            {
+                parameters.Add(ExpressionToNodes(split));
+                split.Clear();
+            }
+            else
+            {
+                split.Add(t);
+            }
+        }
+        if (split.Count > 0)
+        {
+            parameters.Add(ExpressionToNodes(split));
+        }
+        return parameters;
+    }
+
     public static Node ParseLine(List<Token> tokens)
     {
         var t = tokens[0];
@@ -126,12 +153,12 @@ static class Parser
         {
             if (tokens[1].type == TokenType.OpenParenthesis)
             {
-                var expression = ExpressionToNodes(GetTokensUntil(tokens, 2, TokenType.CloseParenthesis));
+                var parameters = GetParams(GetTokensUntil(tokens, 2, TokenType.CloseParenthesis));
                 return new Node
                 {
                     type = NodeType.Call,
                     token = t,
-                    children = new List<Node> { expression }
+                    children = parameters,
                 };
             }
             else if (tokens[1].type == TokenType.Equals)

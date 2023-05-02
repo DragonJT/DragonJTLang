@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 
-enum ByteCode { Call, Add, Sub, Mul, Div, LT, MT, ConstI32, ConstBool, Ret, SetLocal, GetLocal, If, Goto, Yield }
+enum ByteCode { Call, Add, Sub, Mul, Div, LT, MT, ConstF32, ConstBool, Ret, SetLocal, GetLocal, If, Goto, Yield }
 
 class Instruction
 {
@@ -12,6 +13,12 @@ class Function
 {
     public List<Instruction> instructions;
     public int localCount;
+}
+
+class Call
+{
+    public MethodInfo method;
+    public int paramCount;
 }
 
 static class GenerateAsm
@@ -87,8 +94,15 @@ static class GenerateAsm
                 }
             case NodeType.Call:
                 {
-                    Generate(node.children[0], instructions);
-                    instructions.Add(new Instruction { type = ByteCode.Call, value = node.token.text });
+                    foreach(var c in node.children)
+                    {
+                        Generate(c, instructions);
+                    }
+                    instructions.Add(new Instruction
+                    {
+                        type = ByteCode.Call,
+                        value = new Call { method = typeof(CallableFunctions).GetMethod(node.token.text), paramCount = node.children.Count },
+                    });
                     break;
                 }
             case NodeType.Add: BinaryOp(node, instructions, ByteCode.Add); break;
@@ -104,12 +118,12 @@ static class GenerateAsm
                 }
             case NodeType.False:
                 {
-                    instructions.Add(new Instruction { type = ByteCode.ConstI32, value = false });
+                    instructions.Add(new Instruction { type = ByteCode.ConstBool, value = false });
                     break;
                 }
             case NodeType.Number:
                 {
-                    instructions.Add(new Instruction { type = ByteCode.ConstI32, value = int.Parse(node.token.text) });
+                    instructions.Add(new Instruction { type = ByteCode.ConstF32, value = float.Parse(node.token.text) });
                     break;
                 }
             case NodeType.Varname:

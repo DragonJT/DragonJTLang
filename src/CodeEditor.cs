@@ -111,7 +111,14 @@ static class CodeEditor
             {
                 Draw(drawGUI, c.token.text, depth + 1);
                 Draw(drawGUI, "(", depth);
-                DrawExpression(drawGUI, c.children[0], depth+1);
+                for(var i = 0; i < c.children.Count; i++)
+                {
+                    DrawExpression(drawGUI, c.children[i], depth + 1);
+                    if (i < c.children.Count - 1)
+                    {
+                        Draw(drawGUI, ",", depth);
+                    }
+                }
                 Draw(drawGUI, ")", depth);
             }
             else if (c.type == NodeType.If)
@@ -294,8 +301,8 @@ static class CodeEditor
         if(GUI.Button(new Rect(0,0,Main.buttonWidth,Main.lineSize), ">", Main.buttonStyle))
         {
             Game.Begin();
-            var instructions = GenerateAsm.Generate(baseNode);
-            VM.Run(instructions);
+            var function = GenerateAsm.Generate(baseNode);
+            VM.Run(function);
         }
         if (GUI.Button(new Rect(Main.buttonWidth, 0, Main.buttonWidth, Main.lineSize), "Instructions", Main.buttonStyle))
         {

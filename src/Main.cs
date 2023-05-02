@@ -53,7 +53,12 @@ Press control/command backspace to delete previous line.";
             {
                 waitFrame = false;
             }
-            if (GUILayout.Button("Example", buttonStyle))
+            GUI.color = new Color(0.5f, 0.5f, 1);
+            var style = new GUIStyle(labelStyle);
+            style.alignment = TextAnchor.MiddleCenter;
+            GUILayout.Label("Examples", style);
+            GUI.color = Color.white;
+            if (GUILayout.Button("Simple loop and print", buttonStyle))
             {
                 CodeEditor.SetExample(@"var i=0
 while(i<10){
@@ -63,6 +68,18 @@ while(i<10){
     i=i+1
 }");
             }
+            if(GUILayout.Button("Moving triangle", buttonStyle))
+            {
+                CodeEditor.SetExample(@"var x=0
+while(true){
+    x=x+0.01
+    if(x>1){
+        x=0-1
+    }
+    DrawTriangle(x,0,0.2,0.3,1,0.3)
+    yield
+}");
+            }   
             if (GUILayout.Button("Continue", buttonStyle) || Event.current.type == EventType.KeyDown || Event.current.type == EventType.MouseDown)
             {
                 CodeEditor.Begin();

@@ -1,6 +1,19 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+static class CallableFunctions
+{
+    public static void Print(object value)
+    {
+        Game.Print(value.ToString());
+    }
+
+    public static void DrawTriangle(float x, float y, float radius, float r, float g, float b)
+    {
+        Game.DrawTriangle(x, y, radius, new Color(r, g, b));
+    }
+}
+
 static class VM
 {
     static Stack<object> stack;
@@ -60,16 +73,17 @@ static class VM
                     }
                 case ByteCode.Call:
                     {
-                        var func = (string)i.value;
-                        switch (func)
+                        var call = (Call)i.value;
+                        var parameters = new object[call.paramCount];
+                        for(var pi = call.paramCount - 1; pi >= 0; pi--)
                         {
-                            case "Print": Game.Print(stack.Pop().ToString()); break;
-                            default: throw new System.Exception("Unknown function");
+                            parameters[pi] = stack.Pop();
                         }
+                        call.method.Invoke(null, parameters);
                         index++;
                         break;
                     }
-                case ByteCode.ConstI32:
+                case ByteCode.ConstF32:
                     {
                         stack.Push(i.value);
                         index++;
@@ -83,48 +97,48 @@ static class VM
                     }
                 case ByteCode.Add:
                     {
-                        int a = (int)stack.Pop();
-                        int b = (int)stack.Pop();
+                        var a = (float)stack.Pop();
+                        var b = (float)stack.Pop();
                         stack.Push(b + a);
                         index++;
                         break;
                     }
                 case ByteCode.Sub:
                     {
-                        int a = (int)stack.Pop();
-                        int b = (int)stack.Pop();
+                        var a = (float)stack.Pop();
+                        var b = (float)stack.Pop();
                         stack.Push(b - a);
                         index++;
                         break;
                     }
                 case ByteCode.Mul:
                     {
-                        int a = (int)stack.Pop();
-                        int b = (int)stack.Pop();
+                        var a = (float)stack.Pop();
+                        var b = (float)stack.Pop();
                         stack.Push(b * a);
                         index++;
                         break;
                     }
                 case ByteCode.Div:
                     {
-                        int a = (int)stack.Pop();
-                        int b = (int)stack.Pop();
+                        var a = (float)stack.Pop();
+                        var b = (float)stack.Pop();
                         stack.Push(b / a);
                         index++;
                         break;
                     }
                 case ByteCode.LT:
                     {
-                        int a = (int)stack.Pop();
-                        int b = (int)stack.Pop();
+                        var a = (float)stack.Pop();
+                        var b = (float)stack.Pop();
                         stack.Push(b < a);
                         index++;
                         break;
                     }
                 case ByteCode.MT:
                     {
-                        int a = (int)stack.Pop();
-                        int b = (int)stack.Pop();
+                        var a = (float)stack.Pop();
+                        var b = (float)stack.Pop();
                         stack.Push(b > a);
                         index++;
                         break;

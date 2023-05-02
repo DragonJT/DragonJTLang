@@ -4,7 +4,7 @@ using System.Collections.Generic;
 enum TokenType
 {
     If, While, Var, Varname, Number, Add, Sub, Div, Mul, LT, MT, OpenParenthesis, CloseParenthesis, Equals, OpenCurly, CloseCurly,
-    Break, True, False, Yield,
+    Break, True, False, Yield, Comma,
 }
 
 class Token
@@ -39,6 +39,11 @@ static class Tokenizer
     static bool IsLetterOrDigit(char c)
     {
         return IsLetter(c) || IsDigit(c);
+    }
+
+    static bool IsDigitOrDot(char c)
+    {
+        return IsDigit(c) || c == '.';
     }
 
     static Token CreateVarnameToken(CodeReader reader, int start)
@@ -85,7 +90,7 @@ static class Tokenizer
             {
                 return CreateToken(reader, start, TokenType.Number);
             }
-            if (!IsDigit(reader.code[reader.index]))
+            if (!IsDigitOrDot(reader.code[reader.index]))
             {
                 return CreateToken(reader, start, TokenType.Number);
             }
@@ -129,6 +134,7 @@ static class Tokenizer
             case '>': return GetToken(reader, 1, TokenType.MT);
             case '{': return GetToken(reader, 1, TokenType.OpenCurly);
             case '}': return GetToken(reader, 1, TokenType.CloseCurly);
+            case ',': return GetToken(reader, 1, TokenType.Comma);
             case ' ': reader.index++; goto Start;
             case '\t': reader.index++; goto Start;
             case '\r': reader.index++; goto Start;

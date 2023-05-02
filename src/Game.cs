@@ -35,16 +35,15 @@ static class Game
 
     public static void DrawTriangle(float x, float y, float radius, Color color)
     {
-        var a = AddVertex(new Vector2(x-radius, x-radius), color);
-        var b = AddVertex(new Vector2(x, x+radius), color);
-        var c = AddVertex(new Vector2(x+radius, x-radius), color);
+        var a = AddVertex(new Vector2(x-radius, y-radius), color);
+        var b = AddVertex(new Vector2(x, y+radius), color);
+        var c = AddVertex(new Vector2(x+radius, y-radius), color);
         AddTriangle(a, b, c);
     }
 
 
     public static void Update()
     {
-        DrawTriangle(0,0,0.3f, Color.red);
         VM.Update();
         if (mesh == null)
         {
